@@ -85,25 +85,6 @@ class Trainer:
         self.criterion = nn.CrossEntropyLoss()
 
     def train(self):
-        wandb.init(
-            project="ML Optim Project",
-            name="IDK NAME",
-            config={
-                "epochs": self.epochs,
-                "batch_size": self.batch_size,
-                "lr": self.lr,
-                "use_smallest_weight": self.use_smallest_weight,
-                "device": str(self.device),
-                "model": self.model.__class__.__name__,
-            },
-        )
-
-        wandb.watch(
-            self.model,
-            log="all",
-            log_freq=100,
-        )
-
         for epoch in range(self.epochs):
             train_loss, train_acc = self.single_epoch()
 
