@@ -1,7 +1,11 @@
 model: apple/mobilevit-xx-small
 
-epochs: 5
-batch_size: 32
+epochs: 10
+batch_size: 128
 lr: 0.0001
 
-bottom_weights_percentage: 0.10
+bottom_weights_percentage: 1.0
+
+update_strategy: adam
+
+sparsity: 0.2
