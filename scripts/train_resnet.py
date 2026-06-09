@@ -1,3 +1,5 @@
+from wandb import config
+
 from trainer import Trainer
 
 import yaml
@@ -7,10 +9,11 @@ import torch
 from torchvision import transforms
 from torchvision.datasets import MNIST
 
-from transformers import (
-    AutoImageProcessor,
-    AutoModelForImageClassification,
-)
+from torchvision.models import resnet18
+
+from torch.utils.data import Subset
+
+import os
 
 
 def main():
@@ -25,47 +28,48 @@ def main():
 
     args = parser.parse_args()
 
+    print("Config argument:", args.config)
+    print("Absolute path:", os.path.abspath(args.config))
+
+
     with open(args.config, "r") as f:
         config = yaml.safe_load(f)
+    print("Config loaded:")
+    print(config)
 
     # Step 1: Load Model
-    model_name = config["model"]
-
-    model = AutoModelForImageClassification.from_pretrained(
-        model_name,
-        num_labels=10,
-        ignore_mismatched_sizes=True,
-    )
+    model = resnet18(num_classes=10)
 
     epochs = config["epochs"]
     batch_size = config["batch_size"]
     lr = config["lr"]
 
     bottom_weights_percentage = config["bottom_weights_percentage"]
+    
+    update_strategy = config.get(
+        "update_strategy",
+        "adampython scripts/train_resnet.py --config config/config.yaml",
+    )
 
+    sparsity = config.get(
+        "sparsity",
+        0.2,
+    )
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    # Step 2: Image Processor
-    processor = AutoImageProcessor.from_pretrained(model_name)
-
-    if "height" in processor.size:
-        image_size = processor.size["height"]
-    elif "shortest_edge" in processor.size:
-        image_size = processor.size["shortest_edge"]
-    else:
-        image_size = 224
 
     # Transform Dataset
     transform = transforms.Compose(
-        [
-            transforms.Resize((image_size, image_size)),
-            transforms.Grayscale(num_output_channels=3),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=getattr(processor, "image_mean", [0.5, 0.5, 0.5]),
-                std=getattr(processor, "image_std", [0.5, 0.5, 0.5]),
-            ),
-        ]
+            [
+                transforms.Resize((64, 64)),
+                transforms.Grayscale(num_output_channels=3),
+                transforms.ToTensor(),
+                transforms.Normalize(
+                    mean=[0.5, 0.5, 0.5],
+                    std=[0.5, 0.5, 0.5],
+                ),
+            ]
     )
 
     # Step 3: Get data
@@ -82,6 +86,18 @@ def main():
         download=True,
         transform=transform,
     )
+    
+    train_dataset = Subset(
+        train_dataset,
+        range(5000)
+    )
+
+    test_dataset = Subset(
+        test_dataset,
+        range(1000)
+    )
+    
+    
 
     model.to(device)
 
@@ -95,6 +111,8 @@ def main():
         lr,
         device=device,
         use_smallest_weight=bottom_weights_percentage,
+        update_strategy=update_strategy,
+        sparsity=sparsity,
     )
 
     trainer.train()
