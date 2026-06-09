@@ -8,4 +8,4 @@ bottom_weights_percentage: 1.0
 
 update_strategy: adam
 
-sparsity: 0.2
+sparsity: 0.01
