@@ -22,9 +22,9 @@ scaler = GradScaler("cuda")
 
 MODEL_DIR = "C:\\Users\\prana\\OneDrive\\Desktop\\optimizer_project\\base_model"  # folder containing config.json + model.safetensors
 DATA_PATH = "alpaca_data_cleaned.json"
-OUTPUT_DIR = "./bot_40_mag_size"
+OUTPUT_DIR = "./bot_02_mag_size"
 
-SPARSE_DENSITY = 0.4  # train bottom 50% by magnitude
+SPARSE_DENSITY = 0.9  # train bottom 50% by magnitude
 MASK_INTERVAL = 100  # recalculate mask every N optimizer steps
 
 MAX_LENGTH = 216
@@ -199,20 +199,19 @@ def train():
                 global_step += 1
                 scaler.unscale_(optimizer)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 0.4)
-                scaler.step(optimizer)
-                scaler.update()
 
                 # Apply sparse mask to gradients
                 for name, param in model.named_parameters():
                     if param.grad is not None and name in masks:
                         param.grad[~masks[name]] = 0.0
 
+                scaler.step(optimizer)
+                scaler.update()
+
                 # Recompute mask every MASK_INTERVAL steps
                 if global_step % MASK_INTERVAL == 0:
                     masks = compute_bottom_k_mask(model, SPARSE_DENSITY)
 
-                scheduler.step()
-                optimizer.zero_grad()
                 scheduler.step()
                 optimizer.zero_grad()
 
@@ -247,3 +246,4 @@ def train():
 
 if __name__ == "__main__":
     train()
+
