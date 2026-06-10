@@ -24,7 +24,7 @@ MODEL_DIR = "C:\\Users\\prana\\OneDrive\\Desktop\\optimizer_project\\base_model"
 DATA_PATH = "alpaca_data_cleaned.json"
 OUTPUT_DIR = "./top_10_mag_size"
 
-SPARSE_DENSITY = 0.9  # train bottom 50% by magnitude
+SPARSE_DENSITY = 1.0  # train bottom 50% by magnitude
 MASK_INTERVAL = 100  # recalculate mask every N optimizer steps
 
 MAX_LENGTH = 216
@@ -199,8 +199,6 @@ def train():
                 global_step += 1
                 scaler.unscale_(optimizer)
                 torch.nn.utils.clip_grad_norm_(model.parameters(), 0.4)
-                scaler.step(optimizer)
-                scaler.update()
 
                 # Apply sparse mask to gradients
                 for name, param in model.named_parameters():
@@ -211,8 +209,8 @@ def train():
                 if global_step % MASK_INTERVAL == 0:
                     masks = compute_top_k_mask(model, SPARSE_DENSITY)
 
-                scheduler.step()
-                optimizer.zero_grad()
+                scaler.step(optimizer)
+                scaler.update()
                 scheduler.step()
                 optimizer.zero_grad()
 
@@ -247,3 +245,4 @@ def train():
 
 if __name__ == "__main__":
     train()
+
