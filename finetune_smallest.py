@@ -3,6 +3,7 @@ Fine-tuning script for Alpaca-style instruction data.
 Requires: pip install transformers datasets torch accelerate safetensors
 """
 
+import argparse
 import json
 import random
 import torch
@@ -245,5 +246,11 @@ def train():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--density", type=float, default=0.1)
+    args = parser.parse_args()
+    OUTPUT_DIR = f"./bot_{int(args.density * 100)}_mag_size"
+    SPARSE_DENSITY = 1 - args.density
     train()
+
 
