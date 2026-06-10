@@ -145,27 +145,25 @@ def apply_mask_to_gradients(model, masks):
 
 
 def output_dir_default(strategy, density):
-    ans = ""
     match strategy:
         case "standard":
-            ans = "finetuned_model"
+            return "finetuned_model"
         case "lora":
-            ans = "lora_model"
+            return "lora_model"
         case "magnitude_top":
-            ans = f"magnitude_top_{int(density * 100)}"
+            return f"magnitude_top_{int(density * 100)}"
         case "magnitude_bottom":
-            ans = f"magnitude_bottom_{int(density * 100)}"
+            return f"magnitude_bottom_{int(density * 100)}"
         case "gradient_top":
-            ans = f"gradient_top_{int(density * 100)}"
+            return f"gradient_top_{int(density * 100)}"
         case "gradient_bottom":
-            ans = f"gradient_bottom_{int(density * 100)}"
-    return "./output/" + ans
+            return f"gradient_bottom_{int(density * 100)}"
 
 
 def train(config):
 
     strategy = config.get("strategy", "standard")
-    model_dir = config.get("model_dir", "base_model")
+    model_dir = config.get("model_dir", "./input/base_model")
     data_path = config.get("data_path", "alpaca_data_cleaned.json")
     max_length = config.get("max_length", 216)
     batch_size = config.get("batch_size", 16)
@@ -181,7 +179,9 @@ def train(config):
     log_steps = config.get("log_steps", 50)
     sparse_density = config.get("sparse_density", 1.0)
     mask_interval = config.get("mask_interval", 100)
-    output_dir = config.get("output_dir", output_dir_default(strategy, sparse_density))
+    output_dir = "./output/" + config.get(
+        "output_dir", output_dir_default(strategy, sparse_density)
+    )
 
     print(f"Using device: {DEVICE}")
     print(f"Training strategy: {strategy}")

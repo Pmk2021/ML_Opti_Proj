@@ -1,6 +1,6 @@
-model_dir: "./base_model"
-data_path: "./alpaca_data_cleaned.json"
-output_dir: "./top_10_mag_size"
+model_dir: "./input/base_model"
+data_path: "./input/alpaca_data_cleaned.json"
+output_dir: "top_10_mag_size"
 sparse_density: 1.0
 mask_interval: 100
 max_length: 216

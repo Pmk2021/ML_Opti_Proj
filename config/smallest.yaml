@@ -1,5 +1,5 @@
-model_dir: "./base_model"
-data_path: "./alpaca_data_cleaned.json"
+model_dir: "./input/base_model"
+data_path: "./input/alpaca_data_cleaned.json"
 output_dir: "bot_02_mag_size"
 sparse_density: 0.9
 mask_interval: 100

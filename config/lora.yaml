@@ -1,6 +1,6 @@
-MODEL_DIR: "./base_model"
-DATA_PATH: "./alpaca_data_cleaned.json"
-OUTPUT_DIR: "./lora_model"
+MODEL_DIR: "./input/base_model"
+DATA_PATH: "./input/alpaca_data_cleaned.json"
+OUTPUT_DIR: "lora_model"
 MAX_LENGTH: 216
 BATCH_SIZE: 16
 GRAD_ACCUM_STEPS: 4
