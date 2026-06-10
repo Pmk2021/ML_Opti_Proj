@@ -3,6 +3,7 @@ Fine-tuning script for Alpaca-style instruction data.
 Requires: pip install transformers datasets torch accelerate safetensors
 """
 
+import argparse
 import json
 import random
 import torch
@@ -24,7 +25,7 @@ MODEL_DIR = "C:\\Users\\prana\\OneDrive\\Desktop\\optimizer_project\\base_model"
 DATA_PATH = "alpaca_data_cleaned.json"
 OUTPUT_DIR = "./top_10_mag_size"
 
-SPARSE_DENSITY = 1.0  # train bottom 50% by magnitude
+SPARSE_DENSITY = 0.0  # train bottom 50% by magnitude
 MASK_INTERVAL = 100  # recalculate mask every N optimizer steps
 
 MAX_LENGTH = 216
@@ -43,11 +44,10 @@ LOG_STEPS = 50  # print training loss every N optimizer steps
 
 
 def compute_top_k_mask(model, density):
-    """Return a dict of masks selecting the bottom `density` fraction by magnitude."""
     masks = {}
     for name, param in model.named_parameters():
         if param.requires_grad:
-            threshold = torch.quantile(param.data.abs().float(), density)
+            threshold = torch.quantile(param.data.abs().float(), 1.0 - density)
             masks[name] = param.data.abs() >= threshold
     return masks
 
@@ -244,5 +244,10 @@ def train():
 
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--density", type=float, default=0.1)
+    args = parser.parse_args()
+    OUTPUT_DIR = f"./big_{int(args.density * 100)}_mag_size"
+    SPARSE_DENSITY = args.density
     train()
 
