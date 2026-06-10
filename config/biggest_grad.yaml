@@ -1,0 +1,13 @@
+model_dir: "base_model"
+data_path: "alpaca_data_cleaned.json"
+mask_interval: 100
+max_length: 216
+batch_size: 16
+grad_accum_steps: 4
+learning_rate: 1e-5
+num_epochs: 5
+warmup_ratio: 0.03
+weight_decay: 0.01
+val_split: 0.1
+eval_steps: 500
+log_steps: 50
